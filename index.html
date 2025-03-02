@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sjnosuke Chat</title>
+    <!-- Tailwind CSS and DaisyUI via CDN -->
+    <link rel="icon" type="image/png" href="./image/icon.svg">
+    <link href="./tailwinds/daisy.css" rel="stylesheet" type="text/css" />
+    <script src="./tailwinds/tailwinds.js"></script>
+    <link href="./tailwinds/theme.css" rel="stylesheet" type="text/css" />
+    <script src="./script/md.js"></script>
+
+    <!-- Custom styles -->
+    <style>
+        pre {
+            white-space: break-spaces;
+        }
+
+        .chat-container {
+            padding-right: 20px;
+            padding-left: 0px;
+            height: 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .typing-indicator span {
+            animation: blink 1.4s infinite both;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 0.1;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.1;
+            }
+        }
+
+        .sidebar {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            transition: all 0.2s ease;
+        }
+
+        .chat-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .chat-item.active {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="h-screen">
+    <div class="drawer lg:drawer-open h-full">
+        <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
+
+        <div class="drawer-content flex flex-col h-full overflow-hidden">
+            <!-- Top Navbar -->
+            <div class="navbar bg-base-100 z-10">
+                <div class="flex-none lg:hidden">
+                    <label for="drawer-toggle" class="btn btn-square btn-ghost">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </label>
+                </div>
+                <div class="flex-1">
+                    <button class="btn btn-ghost text-xl">Sjnosuke Chat</button>
+                </div>
+                <div class="flex-none gap-2">
+                    <button class="btn btn-ghost btn-circle" id="settings-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+
+                    <div class="dropdown dropdown-end dropdown-hover" id="theme-toggle">
+                        <div tabindex="0" role="button" class="btn m-1">Theme</div>
+                        <ul id="List_Theme" tabindex="0"
+                            class="dropdown-content menu bg-base-100 rounded-box z-[100] p-2 shadow h-64 flex flex-col flex-nowrap overflow-y-scroll">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="container flex-1 self-center">
+                <!-- Chat Card -->
+                <div class="card h-full w-full px-0 lg:px-[10%]">
+                    <div class="card-body p-4 h-full w-full gap-2">
+                        <!-- Chat Messages -->
+                        <div class="chat-container" id="chat-container">
+                            <!-- Messages will be loaded here -->
+                        </div>
+
+                        <!-- Typing Indicator (hidden by default) -->
+                        <div class="ps-[0px] w-fit hidden" id="typing-indicator">
+                            <div class="px-5 py-1 rounded-md bg-primary text-primary-content typing-indicator">
+                                <span class="loading loading-dots loading-md"></span>
+                            </div>
+                        </div>
+
+                        <!-- Input Area -->
+                        <div>
+                            <div class="relative w-full bg-base-300 rounded-2xl p-3 flex flex-col gap-2">
+
+                                <textarea id="user-input" rows="1" placeholder="Ask me anything..."
+                                    class="w-full px-3 min-h-[40px] max-h-[120px] overflow-y-auto resize-none bg-transparent border-none text-base-content text-base outline-none">
+                                </textarea>
+
+                                <button class="self-end bg-primary text-primary-content p-3 rounded-full w-fit"
+                                    id="send-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="drawer-side z-20 h-full">
+            <label for="drawer-toggle" class="drawer-overlay"></label>
+            <aside class="bg-base-200 w-80 sidebar p-4">
+                <div class="flex flex-col h-full gap-4">
+                    <!-- New Chat Button -->
+                    <div>
+                        <button class="btn btn-primary w-full" id="new-chat-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-5 h-5 mr-2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            New Chat
+                        </button>
+                    </div>
+
+                    <!-- Chat List -->
+                    <div class="flex-1 overflow-y-auto">
+                        <h2 class="font-bold mb-2 text-sm opacity-70">Your chats</h2>
+                        <div id="chat-list" class="space-y-1">
+                            <!-- Chat items will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Delete Current Chat -->
+                    <div class="mt-4 pb-4 border-t border-base-300">
+                        <button class="btn btn-outline btn-error w-full" id="delete-chat-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-5 h-5 mr-2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            </svg>
+                            Delete Current Chat
+                        </button>
+                    </div>
+
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <dialog id="settings-modal" class="modal">
+        <form method="dialog" class="modal-box">
+            <h3 class="font-bold text-lg mb-4">AI Settings</h3>
+
+            <div class="form-control w-full mb-3 flex flex-row items-center">
+                <label class="label w-[15%]">
+                    <span class="label-text">Model</span>
+                </label>
+                <select class="select flex-1" id="model-select">
+                    <!-- <option value="openai">OpenAI</option>
+                    <option value="mistral">Mistral</option>
+                    <option value="llama">Llama</option>
+                    <option value="gemini">Gemini</option> -->
+                </select>
+            </div>
+
+            <div class="form-control w-full mb-3 flex flex-row items-center">
+                <label class="label w-[15%] whitespace-break-spaces">
+                    <span class="label-text">System Prompt</span>
+                </label>
+                <textarea class="textarea textarea-bordered flex-1 resize-none" id="system-prompt"
+                    placeholder="Instructions for the AI..." rows="3"></textarea>
+            </div>
+
+            <div class="form-control w-full mb-3">
+                <label class="label">
+                    <span class="label-text">Seed for reproducible results</span>
+                </label>
+                <input type="number" class="input input-bordered w-full" id="seed-input"
+                    placeholder="Leave empty for random" />
+            </div>
+
+            <div class="form-control mb-3">
+                <label class="label cursor-pointer justify-start gap-2">
+                    <input type="checkbox" class="toggle" id="json-toggle" />
+                    <span class="label-text">Receive response in JSON format</span>
+                </label>
+            </div>
+
+            <div class="form-control mb-6">
+                <label class="label cursor-pointer justify-start gap-2">
+                    <input type="checkbox" class="toggle" id="private-toggle" />
+                    <span class="label-text whitespace-break-spaces">Private mode</span>
+                </label>
+            </div>
+
+            <div class="modal-action">
+                <button class="btn">Cancel</button>
+                <button class="btn btn-primary" id="save-settings-btn">Save Settings</button>
+            </div>
+        </form>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <script src="./script/main.js">
+
+    </script>
+</body>
+
+</html>
