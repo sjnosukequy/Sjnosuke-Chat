@@ -18,7 +18,29 @@ const seedInput = document.getElementById('seed-input');
 const jsonToggle = document.getElementById('json-toggle');
 const privateToggle = document.getElementById('private-toggle');
 
-var md = window.markdownit();
+var md = window.markdownit({
+    html: true,
+    linkify: true,
+    typographer: true,
+    highlight: function (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+            try {
+                return `<pre class="code-container"><button class="copy-button btn btn-ghost" onclick="copyToClipboard(\`${md.utils.escapeHtml(str)}\`)">Copy</button><code class="hljs">${hljs.highlight(str, { language: lang, ignoreIllegals: true }).value}</code></pre>`;
+            } catch (__) { }
+        }
+        return `<pre class="code-container"><button class="copy-button btn btn-ghost" onclick="copyToClipboard(\`${md.utils.escapeHtml(str)}\`)">Copy</button><code class="hljs">${md.utils.escapeHtml(str)}</code></pre>`;
+    }
+});
+
+
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function () {
+        alert('Code copied to clipboard!');
+    }, function (err) {
+        console.error('Could not copy text: ', err);
+    });
+}
 
 let themes = [
     "light",
